@@ -1,0 +1,15 @@
+# VScode
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+dist/
+build/
+
+# Environment
+.env
+
+# PyTest
+.pytest_cache/

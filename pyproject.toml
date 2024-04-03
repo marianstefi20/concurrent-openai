@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "concurrent-openai"
+version = "0.1.0"
+description = "Python library for asynchronous interactions with the OpenAI API, enabling concurrent request handling. It simplifies building scalable, AI-powered applications by offering efficient, rate-limited access to OpenAI services. Perfect for developers seeking to integrate OpenAI's capabilities with minimal overhead."
+authors = ["FoodStyles <marian.stefanescu@foodstyles.com>"]
+license = "MIT"
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openai = "^1.14.3"
+pydantic = "^2.6.4"
+pydantic-settings = "^2.2.1"
+structlog = "^24.1.0"
+backoff = "^2.2.1"
+tiktoken = "^0.6.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+isort = "^5.13.2"
+mypy = "^1.9.0"
+pytest = "^8.1.1"
+pytest-asyncio = "^0.23.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
