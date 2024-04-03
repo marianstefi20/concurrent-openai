@@ -15,9 +15,9 @@ async def process_completion_requests(
     openai_wrapper = OpenAIWrapper(
         model=model, temperature=temperature, max_tokens=max_tokens
     )
-    completion_concurrency_manager = OpenAIConcurrentManager(
+    async with OpenAIConcurrentManager(
         openai_wrapper=openai_wrapper,
         semaphore_value=max_concurrent_requests,
         token_safety_margin=token_safety_margin,
-    )
-    return await completion_concurrency_manager.process_completion_requests(prompts)
+    ) as completion_concurrency_manager:
+        return await completion_concurrency_manager.process_completion_requests(prompts)

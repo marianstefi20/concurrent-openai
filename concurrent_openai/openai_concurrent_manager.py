@@ -28,6 +28,12 @@ class OpenAIConcurrentManager:
         self.token_safety_margin = token_safety_margin
         self.semaphore = asyncio.Semaphore(semaphore_value)
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.rate_limiter.cleanup()
+
     async def process_completion_request(
         self, messages: list[ChatCompletionMessageParam]
     ) -> None | dict:
