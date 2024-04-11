@@ -94,8 +94,6 @@ class RateLimiter:
     async def _refill_request_limiter(self):
         while True:
             await asyncio.sleep(self.refill_interval)
-            print("Refilling request bucket")
-            print("Current time", self.loop.time())
             await self.request_bucket.release(self.rps)
 
     async def _refill_token_bucket(self):

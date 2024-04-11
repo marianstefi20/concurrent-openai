@@ -32,15 +32,13 @@ def mocked_message():
     },
 )
 @pytest.mark.parametrize("semaphore_value", [1, 2, 3])
-async def test_process_completion_request(
-    mocked_openai_wrapper_response, semaphore_value
-):
+async def test_process_completion_request(mocked_chat_completion, semaphore_value):
     completion_delay = 0.01
     nr_of_requests = 6
 
     async def mock_get_completion(_, **kwargs):
         await asyncio.sleep(completion_delay)
-        return mocked_openai_wrapper_response
+        return mocked_chat_completion
 
     mocked_openai_wrapper = mock.AsyncMock(spec=OpenAIWrapper)
     mocked_openai_wrapper.model = "gpt-4-0613"

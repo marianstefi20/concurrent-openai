@@ -80,10 +80,6 @@ async def test_rate_limiter_throttling():
         # The requests should be throttled to 2 per refill interval
         assert 0.045 >= elapsed_time >= 0.04
 
-        # Assertions to verify state after requests
-        print("Request bucket: ", rate_limiter.request_bucket.available_amount)
-        print("Token bucket: ", rate_limiter.token_bucket.available_amount)
-
         # 2 requests initially, 4 consumed, buckets refilled 2 times, thus 2 requests available
         assert rate_limiter.request_bucket.available_amount == 2
 

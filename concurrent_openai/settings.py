@@ -28,6 +28,12 @@ class Settings(BaseSettings):
             "input_token_cost": 10 / 1_000_000,
             "output_token_cost": 30 / 1_000_000,
         },
+        "gpt-4-1106-vision-preview": {
+            "rpm": 3000,
+            "tkm": 250000,
+            "input_token_cost": 0.00001,
+            "output_token_cost": 0.00003,
+        },
     }
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

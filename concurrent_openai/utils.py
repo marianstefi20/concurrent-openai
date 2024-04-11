@@ -1,12 +1,52 @@
+import base64
+import math
+import struct
+
 import structlog
 import tiktoken
 
 LOGGER = structlog.get_logger(__name__)
 
 
+def num_tokens_for_image(width: int, height: int, low_resolution: bool = False) -> int:
+    BASE_TOKENS = 85
+    TILE_TOKENS = 170
+    TILE_LENGTH = 512
+
+    MAX_LENGTH = 2048
+    MEDIUM_LENGTH = 768
+
+    if low_resolution:
+        return BASE_TOKENS
+
+    if max(width, height) > MAX_LENGTH:
+        ratio = MAX_LENGTH / max(width, height)
+        width = int(width * ratio)
+        height = int(height * ratio)
+
+    if min(width, height) > MEDIUM_LENGTH:
+        ratio = MEDIUM_LENGTH / min(width, height)
+        width = int(width * ratio)
+        height = int(height * ratio)
+
+    num_tiles = math.ceil(width / TILE_LENGTH) * math.ceil(height / TILE_LENGTH)
+    return BASE_TOKENS + num_tiles * TILE_TOKENS
+
+
+def get_png_dimensions(base64_str: str) -> tuple[int, int]:
+    png_prefix = "data:image/png;base64,"
+    if not base64_str.startswith(png_prefix):
+        raise ValueError("Base64 string is not a PNG image.")
+    base64_str = base64_str.replace(png_prefix, "")
+    decoded_bytes = base64.b64decode(base64_str[: 33 * 4 // 3], validate=True)
+    width, height = struct.unpack(">II", decoded_bytes[16:24])
+    return width, height
+
+
 def num_tokens_from_messages(messages: list[dict], model: str = "gpt-3.5-turbo-0613"):
     """Return the number of tokens used by a list of messages.
-    Source: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+    Adapted from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+    to also work with GPT-4 vision.
     """
     try:
         encoding = tiktoken.encoding_for_model(model)
@@ -46,7 +86,25 @@ def num_tokens_from_messages(messages: list[dict], model: str = "gpt-3.5-turbo-0
     for message in messages:
         num_tokens += tokens_per_message
         for key, value in message.items():
-            num_tokens += len(encoding.encode(value))
+            if isinstance(value, str):
+                num_tokens += len(encoding.encode(value))
+            elif isinstance(value, list):
+                for item in value:
+                    num_tokens += len(encoding.encode(item["type"]))
+                    if item["type"] == "text":
+                        num_tokens += len(encoding.encode(item["text"]))
+                    elif item["type"] == "image_url":
+                        width, height = get_png_dimensions(item["image_url"]["url"])
+                        num_tokens += num_tokens_for_image(width, height)
+                    else:
+                        raise LOGGER.error(
+                            f"Could not encode unsupported message value type: {type(value)}"
+                        )
+            else:
+                raise LOGGER.error(
+                    f"Could not encode unsupported message key type: {type(key)}"
+                )
+
             if key == "name":
                 num_tokens += tokens_per_name
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
