@@ -3,7 +3,11 @@ import logging
 import backoff
 import openai
 import structlog
-from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
+from openai._types import NOT_GIVEN, NotGiven
+from openai.types.chat import ChatCompletion
+from openai.types.chat.completion_create_params import ResponseFormat
+
+from concurrent_openai.types import CompletionRequest
 
 from .settings import settings
 
@@ -20,12 +24,14 @@ class OpenAIWrapper:
         timeout: float = 180,
         temperature: float = 0.1,
         max_tokens: int = 150,
+        response_format: ResponseFormat | NotGiven = NOT_GIVEN,
     ):
         self.model = model
         self.timeout = timeout
         self.client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.response_format = response_format
 
     @backoff.on_exception(
         backoff.expo,
@@ -33,15 +39,17 @@ class OpenAIWrapper:
         max_time=20,
         logger=LOGGER,
     )
-    async def get_completion(
-        self, messages: list[ChatCompletionMessageParam]
-    ) -> ChatCompletion:
+    async def get_completion(self, request: CompletionRequest) -> ChatCompletion:
         response = await self.client.chat.completions.create(
             timeout=self.timeout,
-            messages=messages,
+            messages=request.messages,
             model=self.model,
+            seed=request.seed,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
+            response_format=self.response_format,
+            tool_choice=request.tool_choice,
+            tools=request.tools,
         )
         return response
 

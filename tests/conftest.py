@@ -55,13 +55,13 @@ def mocked_process_completion_requests_response():
             object="chat.completion",
             system_fingerprint=None,
             usage=CompletionUsage(
-                completion_tokens=4, prompt_tokens=279, total_tokens=283
+                completion_tokens=4, prompt_tokens=282, total_tokens=286
             ),
         ),
-        "estimated_prompt_tokens": 292,
-        "prompt_tokens": 279,
+        "estimated_prompt_tokens": 295,
+        "prompt_tokens": 282,
         "completion_tokens": 4,
-        "total_cost": 0.00291,
+        "total_cost": 0.00294,
     }
 
 

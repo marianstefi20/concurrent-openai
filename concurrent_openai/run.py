@@ -1,11 +1,10 @@
-from openai.types.chat import ChatCompletionMessageParam
-
 from .openai_concurrent_manager import OpenAIConcurrentManager
 from .openai_wrapper import OpenAIWrapper
+from .types import CompletionRequest
 
 
 async def process_completion_requests(
-    prompts: list[list[ChatCompletionMessageParam]],
+    prompts: list[CompletionRequest],
     model: str,
     temperature: float = 0.1,
     max_tokens: int = 100,

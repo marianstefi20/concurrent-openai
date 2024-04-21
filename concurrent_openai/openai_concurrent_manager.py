@@ -7,6 +7,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from .openai_wrapper import OpenAIWrapper
 from .rate_limiter import RateLimiter
 from .settings import settings
+from .types import CompletionRequest
 from .utils import num_tokens_from_messages
 
 LOGGER = structlog.get_logger(__name__)
@@ -35,18 +36,18 @@ class OpenAIConcurrentManager:
         await self.rate_limiter.cleanup()
 
     async def process_completion_request(
-        self, messages: list[ChatCompletionMessageParam]
+        self, request: CompletionRequest
     ) -> None | dict:
         async with self.semaphore:
             token_estimation = (
                 num_tokens_from_messages(
-                    [dict(m) for m in messages], self.openai_wrapper.model
+                    [dict(m) for m in request.messages], self.openai_wrapper.model
                 )
                 + self.token_safety_margin
             )
             await self.rate_limiter.acquire(token_estimation)
             try:
-                response = await self.openai_wrapper.get_completion(messages)
+                response = await self.openai_wrapper.get_completion(request)
             except openai.OpenAIError as exc:
                 LOGGER.error(
                     "HTTP error while processing completion request",
@@ -76,7 +77,7 @@ class OpenAIConcurrentManager:
             }
 
     async def process_completion_requests(
-        self, requests: list[list[ChatCompletionMessageParam]]
+        self, requests: list[CompletionRequest]
     ) -> list[dict | None]:
         return await asyncio.gather(
             *[self.process_completion_request(request) for request in requests]

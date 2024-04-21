@@ -6,14 +6,7 @@ import pytest
 from concurrent_openai.openai_concurrent_manager import OpenAIConcurrentManager
 from concurrent_openai.openai_wrapper import OpenAIWrapper
 from concurrent_openai.rate_limiter import RateLimiter
-
-
-@pytest.fixture
-def mocked_message():
-    return {
-        "role": "user",
-        "content": "mock message",
-    }
+from concurrent_openai.types import CompletionRequest
 
 
 @pytest.mark.asyncio
@@ -56,7 +49,8 @@ async def test_process_completion_request(mocked_chat_completion, semaphore_valu
     )
 
     requests = [
-        [{"role": "user", "content": "mock message"}] for _ in range(nr_of_requests)
+        CompletionRequest(messages=[{"role": "user", "content": "mock message"}])
+        for _ in range(nr_of_requests)
     ]
 
     start_time = asyncio.get_event_loop().time()
