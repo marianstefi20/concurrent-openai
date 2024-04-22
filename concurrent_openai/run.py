@@ -1,3 +1,6 @@
+from openai._types import NOT_GIVEN, NotGiven
+from openai.types.chat.completion_create_params import ResponseFormat
+
 from .openai_concurrent_manager import OpenAIConcurrentManager
 from .openai_wrapper import OpenAIWrapper
 from .types import CompletionRequest
@@ -10,9 +13,13 @@ async def process_completion_requests(
     max_tokens: int = 100,
     max_concurrent_requests: int = 100,
     token_safety_margin: int = 10,
+    response_format: ResponseFormat | NotGiven = NOT_GIVEN,
 ) -> list[dict | None]:
     openai_wrapper = OpenAIWrapper(
-        model=model, temperature=temperature, max_tokens=max_tokens
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        response_format=response_format,
     )
     async with OpenAIConcurrentManager(
         openai_wrapper=openai_wrapper,

@@ -2,7 +2,6 @@ import asyncio
 
 import openai
 import structlog
-from openai.types.chat import ChatCompletionMessageParam
 
 from .openai_wrapper import OpenAIWrapper
 from .rate_limiter import RateLimiter
