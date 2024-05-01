@@ -27,3 +27,41 @@ async def process_completion_requests(
         token_safety_margin=token_safety_margin,
     ) as completion_concurrency_manager:
         return await completion_concurrency_manager.process_completion_requests(prompts)
+
+
+async def get_vision_response(
+    prompt: str, base64_images: list[str], **kwargs
+) -> dict | None:
+    responses = await process_completion_requests(
+        prompts=[
+            CompletionRequest(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            *[
+                                {
+                                    "type": "image_url",
+                                    "image_url": {"url": base64_image},
+                                }
+                                for base64_image in base64_images
+                            ],
+                        ],
+                    }
+                ]
+            )
+        ],
+        **kwargs,
+    )
+    return responses[0] if responses else None
+
+
+async def get_responses(prompts: list[str], **kwargs) -> list[dict | None]:
+    return await process_completion_requests(
+        prompts=[
+            CompletionRequest(messages=[{"role": "user", "content": prompt}])
+            for prompt in prompts
+        ],
+        **kwargs,
+    )
