@@ -87,31 +87,22 @@ async def test_process_complection_requests_vision(
     if not completion:
         assert False, "No completion was returned."
 
+    assert completion.answer == mocked_process_completion_requests_response.answer
     assert (
-        completion["response"].choices[0].message.content
-        == mocked_process_completion_requests_response["response"]
-        .choices[0]
-        .message.content
+        completion.estimated_prompt_tokens
+        == mocked_process_completion_requests_response.estimated_prompt_tokens
     )
     assert (
-        completion["response"].usage
-        == mocked_process_completion_requests_response["response"].usage
+        completion.prompt_tokens
+        == mocked_process_completion_requests_response.prompt_tokens
     )
     assert (
-        completion["estimated_prompt_tokens"]
-        == mocked_process_completion_requests_response["estimated_prompt_tokens"]
+        completion.completion_tokens
+        == mocked_process_completion_requests_response.completion_tokens
     )
     assert (
-        completion["prompt_tokens"]
-        == mocked_process_completion_requests_response["prompt_tokens"]
-    )
-    assert (
-        completion["completion_tokens"]
-        == mocked_process_completion_requests_response["completion_tokens"]
-    )
-    assert (
-        pytest.approx(completion["total_cost"], 0.0001)
-        == mocked_process_completion_requests_response["total_cost"]
+        pytest.approx(completion.total_cost, 0.0001)
+        == mocked_process_completion_requests_response.total_cost
     )
 
 
@@ -164,10 +155,10 @@ async def test_process_completion_requests_vision_with_tools(base64_sunglasses_i
     )
 
     completion = responses[0]
-    if not completion:
-        assert False, "No completion was returned."
+    if not completion or not completion.api_response:
+        assert False, "Missing completion or api_response."
 
-    response_message = completion["response"].choices[0].message
+    response_message = completion.api_response.choices[0].message
     tool_calls = response_message.tool_calls
     if not tool_calls:
         assert False, "No tool calls were returned."

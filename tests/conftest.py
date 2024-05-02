@@ -6,6 +6,8 @@ from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.completion_usage import CompletionUsage
 
+from concurrent_openai.types import CompletionResponse
+
 
 @pytest.fixture
 def mocked_chat_completion():
@@ -34,8 +36,8 @@ def mocked_chat_completion():
 
 @pytest.fixture
 def mocked_process_completion_requests_response():
-    return {
-        "response": ChatCompletion(
+    return CompletionResponse(
+        api_response=ChatCompletion(
             id="chatcmpl-9ALGtGXZDpuqlZhEfeEz7fUGKb8zK",
             choices=[
                 Choice(
@@ -58,11 +60,13 @@ def mocked_process_completion_requests_response():
                 completion_tokens=4, prompt_tokens=282, total_tokens=286
             ),
         ),
-        "estimated_prompt_tokens": 295,
-        "prompt_tokens": 282,
-        "completion_tokens": 4,
-        "total_cost": 0.00294,
-    }
+        answer="Emoji with sunglasses.",
+        estimated_prompt_tokens=295,
+        prompt_tokens=282,
+        completion_tokens=4,
+        total_cost=0.00294,
+        conversation_id="chatcmpl-9ALGtGXZDpuqlZhEfeEz7fUGKb8zK",
+    )
 
 
 @pytest.fixture

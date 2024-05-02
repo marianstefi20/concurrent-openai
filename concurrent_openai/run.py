@@ -3,7 +3,7 @@ from openai.types.chat.completion_create_params import ResponseFormat
 
 from .openai_concurrent_manager import OpenAIConcurrentManager
 from .openai_wrapper import OpenAIWrapper
-from .types import CompletionRequest
+from .types import CompletionRequest, CompletionResponse
 
 
 async def process_completion_requests(
@@ -14,7 +14,7 @@ async def process_completion_requests(
     max_concurrent_requests: int = 100,
     token_safety_margin: int = 10,
     response_format: ResponseFormat | NotGiven = NOT_GIVEN,
-) -> list[dict | None]:
+) -> list[CompletionResponse]:
     openai_wrapper = OpenAIWrapper(
         model=model,
         temperature=temperature,
@@ -31,7 +31,7 @@ async def process_completion_requests(
 
 async def get_vision_response(
     prompt: str, base64_images: list[str], **kwargs
-) -> dict | None:
+) -> CompletionResponse:
     responses = await process_completion_requests(
         prompts=[
             CompletionRequest(
@@ -54,10 +54,10 @@ async def get_vision_response(
         ],
         **kwargs,
     )
-    return responses[0] if responses else None
+    return responses[0]
 
 
-async def get_responses(prompts: list[str], **kwargs) -> list[dict | None]:
+async def get_responses(prompts: list[str], **kwargs) -> list[CompletionResponse]:
     return await process_completion_requests(
         prompts=[
             CompletionRequest(messages=[{"role": "user", "content": prompt}])
