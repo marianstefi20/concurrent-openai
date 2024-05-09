@@ -30,28 +30,32 @@ async def process_completion_requests(
 
 
 async def get_vision_response(
-    prompt: str, base64_images: list[str], **kwargs
+    prompt: str,
+    base64_images: list[str],
+    system_prompt: str | None = None,
+    seed: int | None = None,
+    **kwargs
 ) -> CompletionResponse:
-    responses = await process_completion_requests(
-        prompts=[
-            CompletionRequest(
-                messages=[
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append(
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                *[
                     {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            *[
-                                {
-                                    "type": "image_url",
-                                    "image_url": {"url": base64_image},
-                                }
-                                for base64_image in base64_images
-                            ],
-                        ],
+                        "type": "image_url",
+                        "image_url": {"url": base64_image},
                     }
-                ]
-            )
-        ],
+                    for base64_image in base64_images
+                ],
+            ],
+        }
+    )
+    responses = await process_completion_requests(
+        prompts=[CompletionRequest(messages=messages, seed=seed)],
         **kwargs,
     )
     return responses[0]
