@@ -61,11 +61,27 @@ async def get_vision_response(
     return responses[0]
 
 
-async def get_responses(prompts: list[str], **kwargs) -> list[CompletionResponse]:
+async def get_responses(
+    prompts: list[str],
+    system_prompt: str | None = None,
+    seed: int | None = None,
+    **kwargs
+) -> list[CompletionResponse]:
+    prompts_messages = []
+    for prompt in prompts:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        prompts_messages.append(CompletionRequest(messages=messages, seed=seed))
+
     return await process_completion_requests(
-        prompts=[
-            CompletionRequest(messages=[{"role": "user", "content": prompt}])
-            for prompt in prompts
-        ],
+        prompts=prompts_messages,
         **kwargs,
     )
+
+
+async def get_response(
+    prompt: str, system_prompt: str | None = None, seed: int | None = None, **kwargs
+) -> CompletionResponse:
+    return (await get_responses([prompt], system_prompt, seed, **kwargs))[0]

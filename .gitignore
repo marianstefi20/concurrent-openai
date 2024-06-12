@@ -13,3 +13,6 @@ build/
 
 # PyTest
 .pytest_cache/
+
+# MacOS
+.DS_Store
