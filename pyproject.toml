@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "concurrent-openai"
-version = "0.1.0"
+version = "0.1.1"
+repository = "https://github.com/NoPaperMenu/concurrent-openai"
 description = "Python library for asynchronous interactions with the OpenAI API, enabling concurrent request handling. It simplifies building scalable, AI-powered applications by offering efficient, rate-limited access to OpenAI services. Perfect for developers seeking to integrate OpenAI's capabilities with minimal overhead."
 authors = ["FoodStyles <marian.stefanescu@foodstyles.com>"]
 license = "MIT"
