@@ -1,6 +1,10 @@
 import pytest
 
-from concurrent_openai.utils import get_png_dimensions, num_tokens_for_image
+from concurrent_openai.utils import (
+    get_png_dimensions,
+    num_tokens_for_image,
+    num_tokens_from_messages,
+)
 
 
 @pytest.mark.parametrize(
@@ -32,3 +36,29 @@ def test_num_tokens_for_image(width, height, low_resolution, expected):
 def test_get_png_dimensions(base64_sunglasses_image):
     width, height = get_png_dimensions(base64_sunglasses_image)
     assert width == height == 20
+
+
+@pytest.mark.parametrize(
+    "model, actual_prompt_tokens",
+    [
+        ("gpt-4", 151),
+        ("gpt-4o", 152),
+        ("gpt-3.5", 151),
+        ("gpt-3.5-turbo", 151),
+    ],
+)
+def test_num_tokens_from_messages(conversation1, model, actual_prompt_tokens):
+    assert num_tokens_from_messages(conversation1, model=model) == actual_prompt_tokens
+
+
+@pytest.mark.parametrize(
+    "model, actual_prompt_tokens",
+    [
+        ("gpt-4", 179),
+        ("gpt-4o", 179),
+        ("gpt-3.5", 179),
+        ("gpt-3.5-turbo", 179),
+    ],
+)
+def test_num_tokens_from_messages_2(conversation2, model, actual_prompt_tokens):
+    assert num_tokens_from_messages(conversation2, model=model) == actual_prompt_tokens

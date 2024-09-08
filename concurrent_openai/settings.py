@@ -10,41 +10,27 @@ class Settings(BaseSettings):
 
     # Rate limits for different models, change these values according to your OpenAI plan
     OPENAI_MODEL_DETAILS: dict[str, dict[str, float]] = {
-        "gpt-4": {
-            "rpm": 10_000,
-            "tkm": 300_000,
-            "input_token_cost": 10 / 1_000_000,
-            "output_token_cost": 30 / 1_000_000,
-            "max_tokens": 8092,
-        },
-        "gpt-4-turbo-preview": {
-            "rpm": 10_000,
-            "tkm": 1_500_000,
-            "input_token_cost": 10 / 1_000_000,
-            "output_token_cost": 30 / 1_000_000,
-            "max_tokens": 8092,
-        },
-        "gpt-3.5-turbo": {
-            "rpm": 10_000,
-            "tkm": 2_000_000,
-            "input_token_cost": 10 / 1_000_000,
-            "output_token_cost": 30 / 1_000_000,
-            "max_tokens": 4096,
-        },
-        "gpt-4-1106-vision-preview": {
-            "rpm": 3000,
-            "tkm": 250000,
-            "input_token_cost": 0.00001,
-            "output_token_cost": 0.00003,
-            "max_tokens": 4096,
-        },
         "gpt-4o": {
             "rpm": 10_000,
-            "tkm": 20_000_000,
+            "tkm": 30_000_000,
             "input_token_cost": 5 / 1_000_000,
             "output_token_cost": 15 / 1_000_000,
             "max_tokens": 4096,
-        }
+        },
+        "gpt-4o-mini": {
+            "rpm": 30_000,
+            "tkm": 150_000_000,
+            "input_token_cost": 0.150 / 1_000_000,
+            "output_token_cost": 0.6 / 1_000_000,
+            "max_tokens": 16384,
+        },
+        "gpt-4o-2024-08-06": {
+            "rpm": 10_000,
+            "tkm": 30_000_000,
+            "input_token_cost": 2.5 / 1_000_000,
+            "output_token_cost": 10 / 1_000_000,
+            "max_tokens": 4096,
+        },
     }
 
     model_config = SettingsConfigDict(

@@ -1,0 +1,30 @@
+[
+    {
+        "role": "system",
+        "content": "You are a helpful assistant."
+    },
+    {
+        "role": "user",
+        "name": "Developer",
+        "content": "What tokenizer tool I can use to estimate the number of tokens used by a prompt when making a call to OpenAI? Provide a short response."
+    },
+    {
+        "role": "assistant",
+        "content": "You can use the `tiktoken` library to estimate the number of tokens used by a prompt when making a call to OpenAI. It's specifically designed to handle tokenization for OpenAI's models."
+    },
+    {
+        "role": "user",
+        "name": "QA",
+        "content": "Would it help me as well?"
+    },
+    {
+        "role": "assistant",
+        "content": "Yes, the `tiktoken` library can help you as well. It allows you to accurately estimate the number of tokens in your input, which is useful for understanding how your prompts will be processed by OpenAI's models and for managing token limits in API calls.",
+        "refusal": null
+    },
+    {
+        "role": "user",
+        "name": "Developer",
+        "content": "How to install tiktoken using pip?"
+    }
+]
