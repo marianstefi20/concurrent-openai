@@ -1,0 +1,26 @@
+[
+    {
+        "role": "system",
+        "content": "You are a helpful assistant."
+    },
+    {
+        "role": "user",
+        "content": "What tokenizer tool I can use to estimate the number of tokens used by a prompt when making a call to OpenAI? Provide a short response."
+    },
+    {
+        "role": "assistant",
+        "content": "You can use the `tiktoken` library to estimate the number of tokens used by a prompt when making a call to OpenAI. It's specifically designed to handle tokenization for OpenAI's models."
+    },
+    {
+        "role": "user",
+        "content": "How can I install tiktoken using pip?"
+    },
+    {
+        "role": "assistant",
+        "content": "You can install the `tiktoken` library using pip with the following command:\n\n```sh\npip install tiktoken\n```"
+    },
+    {
+        "role": "user",
+        "content": "Show me a short example (no comments, just code)."
+    }
+]

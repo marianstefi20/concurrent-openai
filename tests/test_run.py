@@ -15,7 +15,7 @@ async def test_process_completion_requests_cleanup(mocked_chat_completion):
     prompts = [
         CompletionRequest(messages=[{"role": "user", "content": "mock message"}])
     ]
-    model = "test-gpt-4"
+    model = "gpt-4"
 
     with (
         patch("concurrent_openai.run.OpenAIWrapper") as MockOpenAIWrapper,
@@ -50,7 +50,7 @@ async def test_process_completion_requests_cleanup(mocked_chat_completion):
     not os.getenv("ENABLE_COSTLY_TESTS") == "1", reason="ENABLE_COSTLY_TESTS is not '1'"
 )
 @pytest.mark.asyncio
-async def test_process_complection_requests_vision(
+async def test_process_completion_requests_vision(
     base64_sunglasses_image, mocked_process_completion_requests_response
 ):
     prompts = [
@@ -77,7 +77,7 @@ async def test_process_complection_requests_vision(
     ]
     responses = await process_completion_requests(
         prompts=prompts,  # type: ignore
-        model="gpt-4-1106-vision-preview",
+        model="gpt-4o",
         temperature=0.05,
         max_tokens=100,
         max_concurrent_requests=100,
@@ -147,7 +147,7 @@ async def test_process_completion_requests_vision_with_tools(base64_sunglasses_i
 
     responses = await process_completion_requests(
         prompts=prompts,  # type: ignore
-        model="gpt-4",
+        model="gpt-4o",
         temperature=0.05,
         max_tokens=100,
         max_concurrent_requests=100,
