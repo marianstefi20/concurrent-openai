@@ -41,9 +41,8 @@ def get_model_tokens(model: str) -> dict[str, int]:
     for prefix, tokens in MODEL_PREFIX_TO_TOKENS.items():
         if model.startswith(prefix):
             return tokens
-    raise NotImplementedError(
-        f"num_tokens_from_messages() is not implemented for model {model}."
-    )
+    # Fallback to gpt-4o tokens
+    return MODEL_PREFIX_TO_TOKENS["gpt-4o"]
 
 
 def get_encoding(model: str) -> tiktoken.Encoding:
