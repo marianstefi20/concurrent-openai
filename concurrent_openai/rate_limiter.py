@@ -2,8 +2,6 @@ import asyncio
 
 import structlog
 
-from .settings import settings
-
 LOGGER = structlog.get_logger(__name__)
 
 
@@ -25,15 +23,9 @@ class Bucket:
 
 
 class RateLimiter:
-    def __init__(self, model_name: str):
-        self.model_name = model_name
-        if model_name not in settings.OPENAI_MODEL_DETAILS:
-            raise ValueError(f"Unsupported model: {model_name}")
-
-        model_limits = settings.OPENAI_MODEL_DETAILS[model_name]
-
-        self.rps = int(model_limits["rpm"] / 60)
-        self.tks = int(model_limits["tkm"] / 60)
+    def __init__(self, requests_per_minute: int, tokens_per_minute: int):
+        self.rps = int(requests_per_minute / 60)
+        self.tks = int(tokens_per_minute / 60)
         self.tokens_estimation = 0
 
         self.request_bucket = Bucket(self.rps)

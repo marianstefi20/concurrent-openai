@@ -16,3 +16,8 @@ build/
 
 # MacOS
 .DS_Store
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/

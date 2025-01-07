@@ -1,46 +1,106 @@
-# Concurrent OpenAI Manager
-The Concurrent OpenAI Manager is a pure Python library meticulously designed for developers seeking an optimal integration with OpenAI's APIs. This library is engineered to handle API requests with efficiency, ensuring compliance with rate limits and managing system resources effectively, all while providing transparent cost estimations for OpenAI services.
+<div align="center">
 
-## Key features
-### Rate limiting
-Central to the library is a carefully crafted rate limiter, capable of managing the number of requests and tokens per minute. This ensures your application stays within OpenAI's usage policies, avoiding rate limit violations and potential service disruptions.
+# 🚀 Concurrent OpenAI Manager
 
-### Throttled Request Dispatching
-The throttling mechanism is designed to prevent sudden surges of requests, spreading them evenly over time. This ensures a steady and predictable load on OpenAI's endpoints, contributing to a responsible utilization of API resources and avoiding the 429 errors that might occur if we simply do all the requests at once.
+A lightweight, preemptive rate limiter and concurrency manager for OpenAI's API
 
-### Semaphore for Concurrency Control
-To manage local system resources or limit parallelism, the library incorporates a semaphore mechanism. This allows developers to specify the maximum number of concurrent operations, ensuring balanced resource utilization and a responsive application performance. Useful when you want tot manage local resources (such as database connections or memory usage) or wish to limit parallelism to ensure a responsive user experience. By fine-tuning the semaphore value, you have control on the amount of coroutines that are on the Event Loop.
+[![PyPI version](https://badge.fury.io/py/concurrent-openai.svg)](https://badge.fury.io/py/concurrent-openai)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-### Cost Estimation
-A notable feature of the Concurrent OpenAI Manager is its built-in cost estimation. This functionality provides users with detailed insights into the cost implications of their API requests, including a breakdown of prompt and completion tokens used. Such transparency empowers users to manage their budget effectively and optimize their use of OpenAI's APIs.
+</div>
 
+## ✨ Features
 
-## Getting started
-Integrating the Concurrent OpenAI Manager into your project is straightforward:
+- 🎯 **Preemptive Token Estimation**: Attempts to predict token usage before making API calls
+- 🔄 **Smart Rate Limiting**: Manages requests and tokens per minute to avoid API limits
+- ⚡ **Concurrent Request Handling**: Efficient parallel processing with semaphore control
+- 💰 **Built-in Cost Tracking**: Real-time cost estimation for better budget management
+- 🎚️ **Fine-tuned Control**: Adjustable parameters for optimal performance
+
+## 📦 Installation
 
 ```bash
-$ pip install concurrent-openai
+pip install concurrent-openai
 ```
 
-### Usage
-1. Create a `.env` file in your project directory.
-2. Add an env variable named `OPENAI_API_KEY`.
-3. Test it out:
+## 🚀 Quick Start
+
+1. Set up your environment:
+
+```bash
+echo "OPENAI_API_KEY=your_api_key" >> .env
+# OR
+export OPENAI_API_KEY=your_api_key
+```
+
+<small>Note: You can also pass the `api_key` to the `ConcurrentOpenAI` client.</small>
+
+2. Start making requests:
+
 ```python
-from concurrent_openai import process_completion_requests
+from concurrent_openai import ConcurrentOpenAI
 
-results = await process_completion_requests(
-    prompts=[{"role": "user", "content": "Knock, knock!"}],
-    model="gpt-4-0613",
-    temperature=0.7,
-    max_tokens=150,
+
+async with ConcurrentOpenAI(
+    api_key="your-api-key",  # not required if OPENAI_API_KEY env var is set
     max_concurrent_requests=5,
-    token_safety_margin=10,
-)
-
-for result in results:
-    if result:
-        print(result)
-    else:
-        print("Error processing request.")
+    requests_per_minute=200,
+    tokens_per_minute=40000
+) as client:
+    response = await client.create(
+        messages=[{"role": "user", "content": "Hello!"}],
+        model="gpt-4",
+        temperature=0.7
+    )
+    print(response.content)
 ```
+
+## 🎯 Why Concurrent OpenAI Manager?
+
+- **Preemptive Rate Limiting**: Unlike other libraries that react to rate limits, here the idea is to predict the token usage before making requests
+- **Resource Optimization**: Smart throttling prevents request surges and optimizes API usage
+- **Cost Control**: Built-in cost estimation helps manage API expenses effectively
+- **Lightweight**: Minimal dependencies, focused functionality
+
+## 🔧 Advanced Usage
+
+### Batch Processing
+
+```python
+
+from concurrent_openai import ConcurrentOpenAI
+
+messages_list = [
+    [{"role": "user", "content": f"Process item {i}"}]
+    for i in range(10)
+]
+
+async with ConcurrentOpenAI(api_key="your-api-key") as client:
+    responses = await client.create_many(
+        messages_list=messages_list,
+        model="gpt-4",
+        temperature=0.7
+    )
+    for resp in responses:
+        if resp.is_success:
+            print(resp.content)
+```
+
+### Cost Tracking
+
+```python
+client = ConcurrentOpenAI(
+    api_key="your-api-key",
+    input_token_cost=0.01,  # Cost per 1K input tokens
+    output_token_cost=0.03  # Cost per 1K output tokens
+)
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

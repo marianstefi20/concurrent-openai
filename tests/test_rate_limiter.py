@@ -7,19 +7,8 @@ from concurrent_openai.rate_limiter import RateLimiter
 
 
 @pytest.mark.asyncio
-@mock.patch(
-    "concurrent_openai.rate_limiter.settings.OPENAI_MODEL_DETAILS",
-    {
-        "gpt-4": {
-            "rpm": 120,
-            "tkm": 600,
-            "input_token_cost": 1,
-            "output_token_cost": 3,
-        }
-    },
-)
 async def test_rate_limiter_refill_mechanism():
-    rate_limiter = RateLimiter("gpt-4")
+    rate_limiter = RateLimiter(120, 600)
     # Set the refill interval to a very low value to speed up the test (normally this should always be 1)
     with mock.patch.object(rate_limiter, "refill_interval", 0.01):
         assert rate_limiter.rps == 2  # 120 / 60
@@ -48,22 +37,11 @@ async def test_rate_limiter_refill_mechanism():
 
 
 @pytest.mark.asyncio
-@mock.patch(
-    "concurrent_openai.rate_limiter.settings.OPENAI_MODEL_DETAILS",
-    {
-        "gpt-4": {
-            "rpm": 120,
-            "tkm": 6000,
-            "input_token_cost": 1,
-            "output_token_cost": 3,
-        }
-    },
-)
 async def test_rate_limiter_throttling():
-    rate_limiter = RateLimiter("gpt-4")
+    rate_limiter = RateLimiter(120, 6000)
     with mock.patch.object(rate_limiter, "refill_interval", 0.02):
         assert rate_limiter.rps == 2  # 120 / 60
-        assert rate_limiter.tks == 100
+        assert rate_limiter.tks == 100  # 6000 / 60
 
         loop = asyncio.get_event_loop()
         start_time = loop.time()
