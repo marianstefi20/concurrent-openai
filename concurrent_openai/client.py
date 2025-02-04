@@ -53,20 +53,25 @@ class ConcurrentOpenAI:
         self.input_token_cost = input_token_cost
         self.output_token_cost = output_token_cost
 
-        # Initialize rate limiter if limits are provided
-        self.rate_limiter = None
-        if requests_per_minute and tokens_per_minute:
-            self.rate_limiter = RateLimiter(
-                requests_per_minute=requests_per_minute,
-                tokens_per_minute=tokens_per_minute,
+        self.request_limiter = (
+            RateLimiter(
+                capacity=requests_per_minute,
+                fill_rate=requests_per_minute / 60,
+                minimum_spacing=1 / (requests_per_minute / 60),
             )
+            if requests_per_minute
+            else None
+        )
 
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        if self.rate_limiter:
-            await self.rate_limiter.cleanup()
+        self.token_limiter = (
+            RateLimiter(
+                capacity=tokens_per_minute,
+                fill_rate=tokens_per_minute / 60,
+                minimum_spacing=1 / (tokens_per_minute / 60),
+            )
+            if tokens_per_minute
+            else None
+        )
 
     async def create(
         self,
@@ -86,8 +91,11 @@ class ConcurrentOpenAI:
             )
 
             # Apply rate limiting if enabled
-            if self.rate_limiter:
-                await self.rate_limiter.acquire(estimated_total_tokens)
+            if self.request_limiter:
+                await self.request_limiter.acquire(1)
+
+            if self.token_limiter:
+                await self.token_limiter.acquire(estimated_total_tokens)
 
             try:
                 response = await self.client.chat.completions.create(
@@ -108,10 +116,6 @@ class ConcurrentOpenAI:
                 if self.input_token_cost and self.output_token_cost:
                     input_cost = response.usage.prompt_tokens * self.input_token_cost
                     output_cost = response.usage.completion_tokens * self.output_token_cost
-
-                # Release rate limiter with actual token usage
-                if self.rate_limiter:
-                    await self.rate_limiter.release(response.usage.total_tokens)
 
                 return ConcurrentCompletionResponse(
                     openai_response=response,

@@ -1,94 +1,140 @@
 import asyncio
+import time
+from typing import Optional
 
 import structlog
 
 LOGGER = structlog.get_logger(__name__)
 
 
-class Bucket:
-    def __init__(self, amount: int):
-        self.available_amount = amount
-        self.cond = asyncio.Condition()
-
-    async def acquire(self, amount: int = 1):
-        async with self.cond:
-            while self.available_amount < amount:
-                await self.cond.wait()
-            self.available_amount -= amount
-
-    async def release(self, amount: int = 1):
-        async with self.cond:
-            self.available_amount += amount
-            self.cond.notify_all()
-
-
 class RateLimiter:
-    def __init__(self, requests_per_minute: int, tokens_per_minute: int):
-        self.rps = int(requests_per_minute / 60)
-        self.tks = int(tokens_per_minute / 60)
-        self.tokens_estimation = 0
+    """A token bucket rate limiter implementation.
 
-        self.request_bucket = Bucket(self.rps)
-        self.token_bucket = Bucket(self.tks)
+    This rate limiter uses the token bucket algorithm to control the rate of actions.
+    It supports both steady-state rate limiting and optional minimum spacing between requests.
 
-        self.refill_request_task = asyncio.create_task(self._refill_request_limiter())
-        self.refill_token_task = asyncio.create_task(self._refill_token_bucket())
+    Attributes:
+        capacity: Maximum number of tokens that can accumulate (burst limit)
+        fill_rate: Number of tokens added per second (steady-state rate)
+        minimum_spacing: Minimal time in seconds between requests
+    """
 
-        self.loop = asyncio.get_event_loop()
-        self.last_request_time = self.loop.time()
-        self.refill_interval: float = (
-            1  # Refill rate is 1 token per second, but for tests we can set it to 0.01
-        )
-        self.request_slot_lock = asyncio.Lock()
+    def __init__(
+        self,
+        capacity: float,
+        fill_rate: float,
+        minimum_spacing: float = 0.0,
+    ) -> None:
+        """Initialize the rate limiter.
 
-    async def acquire(self, tokens_estimation: int):
-        await self.wait_for_next_request_slot()
-        self.tokens_estimation = tokens_estimation
-        await self.token_bucket.acquire(self.tokens_estimation)
-        await self.request_bucket.acquire(1)
+        Args:
+            capacity: Maximum number of tokens that can accumulate (burst limit)
+            fill_rate: Number of tokens added per second (steady-state rate)
+            minimum_spacing: Minimal time in seconds between requests.
+                           Set to 0.0 (default) to allow bursting up to capacity.
 
-    async def wait_for_next_request_slot(self):
-        async with self.request_slot_lock:
-            elapsed_since_last_request = self.loop.time() - self.last_request_time
+        Raises:
+            ValueError: If capacity, fill_rate or minimum_spacing are negative
+        """
+        if capacity <= 0:
+            raise ValueError("Capacity must be positive")
+        if fill_rate <= 0:
+            raise ValueError("Fill rate must be positive")
+        if minimum_spacing < 0:
+            raise ValueError("Minimum spacing cannot be negative")
 
-            ideal_interval = self.refill_interval / self.rps
-            if elapsed_since_last_request < ideal_interval:
-                await asyncio.sleep(ideal_interval - elapsed_since_last_request)
+        self._capacity = capacity
+        self._tokens = capacity
+        self._fill_rate = fill_rate
+        self._minimum_spacing = minimum_spacing
 
-            self.last_request_time = self.loop.time()
+        self._last_refill_time = time.monotonic()
+        self._last_request_time: Optional[float] = None
+        self._lock = asyncio.Lock()
 
-    async def release(self, tokens: int):
-        # Because tokens estimation is not accurate, fine tune the token bucket
-        if self.tokens_estimation < tokens:
-            LOGGER.warning(
-                "Underestimated the number of tokens required for this request",
-                tokens_estimation=self.tokens_estimation,
-                tokens=tokens,
+    @property
+    def capacity(self) -> float:
+        """Maximum number of tokens that can accumulate."""
+        return self._capacity
+
+    @property
+    def tokens(self) -> float:
+        """Current number of available tokens."""
+        return self._tokens
+
+    @property
+    def fill_rate(self) -> float:
+        """Number of tokens added per second."""
+        return self._fill_rate
+
+    @property
+    def minimum_spacing(self) -> float:
+        """Minimum time required between requests."""
+        return self._minimum_spacing
+
+    async def acquire(self, tokens: float = 1.0) -> None:
+        if tokens <= 0:
+            raise ValueError("Number of tokens must be positive")
+        if tokens > self.capacity:
+            raise ValueError("Requested tokens cannot exceed the bucket capacity")
+
+        while True:
+            async with self._lock:
+                now = time.monotonic()
+                wait_time = self._calculate_wait_time(now, tokens)
+
+                if wait_time <= 0:
+                    self._tokens -= tokens
+                    self._last_request_time = now
+                    return
+
+            await asyncio.sleep(wait_time)
+
+    def _calculate_wait_time(self, now: float, requested_tokens: float) -> float:
+        wait_time = 0.0
+
+        # Check minimum spacing requirement
+        if self._minimum_spacing > 0 and self._last_request_time is not None:
+            elapsed_since_last = now - self._last_request_time
+            if elapsed_since_last < self._minimum_spacing:
+                wait_time = self._minimum_spacing - elapsed_since_last
+
+        # Refill tokens
+        self._refill(now)
+
+        # Check if we need to wait for token refill
+        if self._tokens < requested_tokens:
+            missing = requested_tokens - self._tokens
+            refill_wait = missing / self._fill_rate
+            wait_time = max(wait_time, refill_wait)
+
+        return wait_time
+
+    def _refill(self, now: float) -> None:
+        """Refill the token bucket based on elapsed time.
+
+        Args:
+            now: Current timestamp
+        """
+        elapsed = now - self._last_refill_time
+        if elapsed > 0:
+            added_tokens = elapsed * self._fill_rate
+            self._tokens = min(self._capacity, self._tokens + added_tokens)
+            self._last_refill_time = now
+
+            LOGGER.debug(
+                "Tokens refilled",
+                added=added_tokens,
+                current=self._tokens,
+                capacity=self._capacity,
+                elapsed=elapsed,
             )
-            await self.token_bucket.acquire(tokens - self.tokens_estimation)
-        elif self.tokens_estimation > tokens:
-            await self.token_bucket.release(self.tokens_estimation - tokens)
 
-    async def cleanup(self):
-        self.refill_request_task.cancel()
-        self.refill_token_task.cancel()
-
-        try:
-            await self.refill_request_task
-        except asyncio.CancelledError:
-            pass
-
-        try:
-            await self.refill_token_task
-        except asyncio.CancelledError:
-            pass
-
-    async def _refill_request_limiter(self):
-        while True:
-            await asyncio.sleep(self.refill_interval)
-            await self.request_bucket.release(self.rps)
-
-    async def _refill_token_bucket(self):
-        while True:
-            await asyncio.sleep(self.refill_interval)
-            await self.token_bucket.release(self.tks)
+    def __repr__(self) -> str:
+        """Return string representation of the rate limiter."""
+        return (
+            f"RateLimiter(capacity={self._capacity}, "
+            f"fill_rate={self._fill_rate}, "
+            f"minimum_spacing={self._minimum_spacing}, "
+            f"current_tokens={self._tokens:.2f})"
+        )

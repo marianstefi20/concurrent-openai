@@ -93,8 +93,6 @@ async def test_concurrent_requests(semaphore_value, mocked_chat_completion):
             f"for semaphore value {semaphore_value}"
         )
 
-        await client.__aexit__(None, None, None)
-
 
 @pytest.mark.skipif(
     not os.getenv("ENABLE_COSTLY_TESTS") == "1", reason="ENABLE_COSTLY_TESTS is not '1'"
@@ -140,5 +138,3 @@ async def test_vision_request(base64_sunglasses_image):
     assert response.openai_response.usage is not None
     assert response.openai_response.usage.prompt_tokens > 0
     assert response.openai_response.usage.completion_tokens > 0
-
-    await client.__aexit__(None, None, None)
