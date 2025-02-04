@@ -33,7 +33,11 @@ jobs:
             - name: Install dependencies
               run: |
                 poetry install
-            
+
+            - name: Build package
+              run: |
+                poetry build
+
             - name: Release
               id: release
               uses: python-semantic-release/python-semantic-release@v9.15.2
