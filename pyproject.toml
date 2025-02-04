@@ -10,10 +10,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-openai = "^1.14.3"
 structlog = "^24.1.0"
 tiktoken = "^0.7.0"
 python-dotenv = "^1.0.1"
+openai = "^1.61.0"
 
 
 [tool.poetry.group.dev.dependencies]
