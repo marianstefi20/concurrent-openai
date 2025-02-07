@@ -95,8 +95,8 @@ for resp in responses:
 ```python
 client = ConcurrentOpenAI(
     api_key="your-api-key",
-    input_token_cost=0.01,  # Cost per 1K input tokens
-    output_token_cost=0.03  # Cost per 1K output tokens
+    input_token_cost=2.5 / 1_000_000,  # see https://openai.com/api/pricing/ for the latest costs
+    output_token_cost=10 / 1_000_000
 )
 ```
 
