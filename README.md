@@ -42,18 +42,20 @@ export OPENAI_API_KEY=your_api_key
 from concurrent_openai import ConcurrentOpenAI
 
 
-async with ConcurrentOpenAI(
+client = ConcurrentOpenAI(
     api_key="your-api-key",  # not required if OPENAI_API_KEY env var is set
     max_concurrent_requests=5,
     requests_per_minute=200,
     tokens_per_minute=40000
-) as client:
-    response = await client.create(
-        messages=[{"role": "user", "content": "Hello!"}],
-        model="gpt-4",
-        temperature=0.7
-    )
-    print(response.content)
+)
+
+response = client.create(
+    messages=[{"role": "user", "content": "Hello!"}],
+    model="gpt-4o",
+    temperature=0.7
+)
+
+print(response.content)
 ```
 
 ## 🎯 Why Concurrent OpenAI Manager?
@@ -76,15 +78,16 @@ messages_list = [
     for i in range(10)
 ]
 
-async with ConcurrentOpenAI(api_key="your-api-key") as client:
-    responses = await client.create_many(
-        messages_list=messages_list,
-        model="gpt-4",
-        temperature=0.7
-    )
-    for resp in responses:
-        if resp.is_success:
-            print(resp.content)
+client = ConcurrentOpenAI(api_key="your-api-key")
+responses = client.create_many(
+    messages_list=messages_list,
+    model="gpt-40",
+    temperature=0.7
+)
+
+for resp in responses:
+    if resp.is_success:
+        print(resp.content)
 ```
 
 ### Cost Tracking
