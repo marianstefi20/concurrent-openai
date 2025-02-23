@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Any, Optional
+from typing import Any
 
 import structlog
 from dotenv import load_dotenv
@@ -18,13 +18,15 @@ load_dotenv()
 class ConcurrentOpenAI:
     def __init__(
         self,
+        *,
+        client: AsyncOpenAI | None = None,
         api_key: str | None = None,
         max_concurrent_requests: int = 100,
         token_safety_margin: int = 100,
-        requests_per_minute: Optional[int] = None,
-        tokens_per_minute: Optional[int] = None,
-        input_token_cost: Optional[float] = None,
-        output_token_cost: Optional[float] = None,
+        requests_per_minute: int | None = None,
+        tokens_per_minute: int | None = None,
+        input_token_cost: float | None = None,
+        output_token_cost: float | None = None,
         **client_options: Any,
     ):
         """
@@ -40,14 +42,17 @@ class ConcurrentOpenAI:
             output_token_cost: Cost per output token (optional)
             **client_options: Additional options passed to AsyncOpenAI client
         """
-        # set api key from env in case it's not provided
-        if not api_key:
-            api_key = os.getenv("OPENAI_API_KEY")
+        if not client:
+            # Default to AsyncOpenAI if none provided
+            if not api_key:
+                api_key = os.getenv("OPENAI_API_KEY")
 
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY is not set")
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY is not set")
 
-        self.client = AsyncOpenAI(api_key=api_key, **client_options)
+            client = AsyncOpenAI(api_key=api_key, **client_options)
+
+        self.client = client
         self.token_safety_margin = token_safety_margin
         self.semaphore = asyncio.Semaphore(max_concurrent_requests)
         self.input_token_cost = input_token_cost

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.completion_usage import CompletionUsage
@@ -134,6 +134,45 @@ async def test_vision_request(base64_sunglasses_image):
 
     assert response.is_success
     assert response.content == "Emoji with sunglasses."
+    assert response.openai_response is not None
+    assert response.openai_response.usage is not None
+    assert response.openai_response.usage.prompt_tokens > 0
+    assert response.openai_response.usage.completion_tokens > 0
+
+
+@pytest.mark.skipif(
+    not os.getenv("ENABLE_COSTLY_TESTS") == "1", reason="ENABLE_COSTLY_TESTS is not '1'"
+)
+@pytest.mark.asyncio
+async def test_azure_client_integration():
+    """Test integration with Azure OpenAI client using actual API calls."""
+    azure_client = AsyncAzureOpenAI(
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+        api_version="2024-02-01",
+    )
+
+    # Initialize our concurrent client with Azure client
+    client = ConcurrentOpenAI(
+        client=azure_client,
+        max_concurrent_requests=1,
+        requests_per_minute=60,
+        tokens_per_minute=10000,
+    )
+
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Say 'Hello from Azure!' and nothing else."},
+    ]
+
+    response = await client.create(
+        messages=messages,
+        model="gpt-35-turbo",
+        temperature=0.7,
+    )
+
+    assert response.is_success
+    assert response.content == "Hello from Azure!"
     assert response.openai_response is not None
     assert response.openai_response.usage is not None
     assert response.openai_response.usage.prompt_tokens > 0
