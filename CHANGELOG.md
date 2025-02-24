@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.2.2 (2025-02-24)
+
+### Bug Fixes
+
+- Build after semantic-release step
+  ([`22a98c4`](https://github.com/marianstefi20/concurrent-openai/commit/22a98c4700b58fa280e489bea7376727ee497a90))
+
+
 ## v1.2.1 (2025-02-24)
 
 ### Bug Fixes
