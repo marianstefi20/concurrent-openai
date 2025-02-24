@@ -4,6 +4,7 @@
 
 A lightweight, preemptive rate limiter and concurrency manager for OpenAI's API
 
+[![codecov](https://codecov.io/gh/marianstefi20/concurrent-openai/branch/main/graph/badge.svg?token=T9ANDWA7BN)](https://codecov.io/gh/marianstefi20/concurrent-openai)
 [![PyPI version](https://badge.fury.io/py/concurrent-openai.svg)](https://badge.fury.io/py/concurrent-openai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
