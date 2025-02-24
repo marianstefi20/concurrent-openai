@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## v1.2.1 (2025-02-24)
+
+### Bug Fixes
+
+- Remove duplicate publish step in GitHub workflow
+  ([`f26b224`](https://github.com/marianstefi20/concurrent-openai/commit/f26b224625aa1e444c590a08efeefce6e07fd511))
+
+### Chores
+
+- Update author and repo URL
+  ([`ba6c5ac`](https://github.com/marianstefi20/concurrent-openai/commit/ba6c5ac64a139cc4e8ae8a718d25003f3fd6e51d))
+
+### Documentation
+
+- Add coverage badge
+  ([`2984ca9`](https://github.com/marianstefi20/concurrent-openai/commit/2984ca957a1af16894e1270a63e4144830be5e27))
+
+
 ## v1.2.0 (2025-02-24)
 
 ### Bug Fixes
