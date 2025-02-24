@@ -84,11 +84,3 @@ jobs:
         - name: Publish to PyPI
           uses: pypa/gh-action-pypi-publish@v1.12.3
           if: steps.release.outputs.released == 'true'
-          with:
-            password: ${{ secrets.PYPI_API_TOKEN }}
-                      
-        - name: Python Semantic Release - Publish
-          uses: python-semantic-release/publish-action@v9.15.2
-          if: steps.release.outputs.released == 'true'
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
