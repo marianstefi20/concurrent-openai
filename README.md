@@ -58,6 +58,22 @@ response = client.create(
 print(response.content)
 ```
 
+### Or pass your own instance of `AsyncOpenAI`
+
+```python
+from openai import AsyncOpenAI
+from concurrent_openai import ConcurrentOpenAI
+
+
+openai_client = AsyncOpenAI(api_key="your-api-key")
+
+client = ConcurrentOpenAI(
+    client=openai_client,
+    max_concurrent_requests=5,
+    requests_per_minute=200,
+    tokens_per_minute=40000
+)
+```
 ## 🎯 Why Concurrent OpenAI Manager?
 
 - **Preemptive Rate Limiting**: Unlike other libraries that react to rate limits, here the idea is to predict the token usage before making requests
@@ -66,6 +82,34 @@ print(response.content)
 - **Lightweight**: Minimal dependencies, focused functionality
 
 ## 🔧 Advanced Usage
+
+### Azure OpenAI Integration
+The library supports seamless integration with Azure OpenAI services:
+
+```python
+from openai import AsyncAzureOpenAI
+from concurrent_openai import ConcurrentOpenAI
+
+
+azure_client = AsyncAzureOpenAI(
+    azure_endpoint="your-azure-endpoint",
+    api_key="your-azure-api-key",
+    api_version="2024-02-01"
+)
+
+client = ConcurrentOpenAI(
+    client=azure_client,
+    max_concurrent_requests=5,
+    requests_per_minute=60,
+    tokens_per_minute=10000
+)
+
+response = await client.create(
+    messages=[{"role": "user", "content": "Hello!"}],
+    model="gpt-35-turbo", # Use your deployed model name
+    temperature=0.7
+)
+```
 
 ### Batch Processing
 
