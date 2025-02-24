@@ -71,15 +71,15 @@ jobs:
           run: |
             poetry install
 
-        - name: Build package
-          run: |
-            poetry build
-
         - name: Release
           id: release
           uses: python-semantic-release/python-semantic-release@v9.15.2
           with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Build package
+          run: |
+            poetry build
             
         - name: Publish to PyPI
           uses: pypa/gh-action-pypi-publish@v1.12.3
