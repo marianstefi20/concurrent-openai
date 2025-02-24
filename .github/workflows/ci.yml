@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
       ENABLE_COSTLY_TESTS: 1
 
     steps:
