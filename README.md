@@ -19,6 +19,7 @@ A lightweight, preemptive rate limiter and concurrency manager for OpenAI's API
 - 💰 **Built-in Cost Tracking**: Real-time cost estimation for better budget management
 - 🎚️ **Fine-tuned Control**: Adjustable parameters for optimal performance
 
+
 ## 📦 Installation
 
 ```bash
@@ -75,12 +76,6 @@ client = ConcurrentOpenAI(
     tokens_per_minute=40000
 )
 ```
-## 🎯 Why Concurrent OpenAI Manager?
-
-- **Preemptive Rate Limiting**: Unlike other libraries that react to rate limits, here the idea is to predict the token usage before making requests
-- **Resource Optimization**: Smart throttling prevents request surges and optimizes API usage
-- **Cost Control**: Built-in cost estimation helps manage API expenses effectively
-- **Lightweight**: Minimal dependencies, focused functionality
 
 ## 🔧 Advanced Usage
 
@@ -145,10 +140,10 @@ client = ConcurrentOpenAI(
 )
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
