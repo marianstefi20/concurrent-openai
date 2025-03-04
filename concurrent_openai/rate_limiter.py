@@ -122,13 +122,13 @@ class RateLimiter:
             self._tokens = min(self._capacity, self._tokens + added_tokens)
             self._last_refill_time = now
 
-            LOGGER.debug(
-                "Tokens refilled",
-                added=added_tokens,
-                current=self._tokens,
-                capacity=self._capacity,
-                elapsed=elapsed,
-            )
+            if self._tokens < (self._capacity * 0.05):
+                LOGGER.warning(
+                    "Token bucket running low",
+                    current_tokens=self._tokens,
+                    capacity=self._capacity,
+                    fill_rate=self._fill_rate,
+                )
 
     def __repr__(self) -> str:
         """Return string representation of the rate limiter."""
